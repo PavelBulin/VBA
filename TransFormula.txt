@@ -1,0 +1,40 @@
+Sub TransFormula()
+    Dim RE As New regExp
+    Dim MC As Object
+    Dim i%, j%
+    Dim arrS(), arrC, strin, char As String
+    
+    With RE
+        .Global = True
+        .Pattern = "[A-Z]\d+|\d+"
+        Set MC = .Execute(ActiveCell)
+    End With
+    
+    ReDim arrS(1 To MC.Count)
+    For i = 1 To MC.Count
+        arrS(i) = MC(i - 1)
+        Cells(ActiveCell.Row, ActiveCell.Column + i + i - 1).Formula = "=" & arrS(i)
+    Next i
+    
+    With RE
+        .Global = True
+        .Pattern = "[-\+\*/^]"
+        Set MC = .Execute(ActiveCell)
+    End With
+
+    ReDim arrC(1 To MC.Count)
+    For i = 1 To MC.Count
+        arrC(i) = MC(i - 1)
+        Cells(ActiveCell.Row, ActiveCell.Column + 2 * i).Formula = arrC(i)
+    Next i
+    Cells(ActiveCell.Row + 2, ActiveCell.Column).Clear
+    col1 = ActiveCell.Column + 1
+    col2 = Cells(ActiveCell.Row, ActiveCell.Column + 1).End(xlToRight).Column
+    Cells(ActiveCell.Row, ActiveCell.Column + 1).Resize(, col2 - col1 + 1).Select
+    For j = 1 To Selection.Count
+        Cells(ActiveCell.Row + 2, ActiveCell.Column - 1) = Cells(ActiveCell.Row + 2, ActiveCell.Column - 1) & Selection.Cells(j)
+    Next
+    Cells(ActiveCell.Row + 2, ActiveCell.Column - 1).Activate
+    ActiveCell = "=" & ActiveCell
+End Sub
+
