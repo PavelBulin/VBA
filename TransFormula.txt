@@ -1,40 +1,74 @@
 Sub TransFormula()
     Dim RE As New regExp
-    Dim MC As Object
-    Dim i%, j%
-    Dim arrS(), arrC, strin, char As String
+    Dim MCs As Object
+    Dim i%, j%, m%, n%
+    Dim arrS() As String
+    Dim rngD, rngX As Range
     
-    With RE
-        .Global = True
-        .Pattern = "[A-Z]\d+|\d+"
-        Set MC = .Execute(ActiveCell)
-    End With
-    
-    ReDim arrS(1 To MC.Count)
-    For i = 1 To MC.Count
-        arrS(i) = MC(i - 1)
-        Cells(ActiveCell.Row, ActiveCell.Column + i + i - 1).Formula = "=" & arrS(i)
-    Next i
-    
-    With RE
-        .Global = True
-        .Pattern = "[-\+\*/^]"
-        Set MC = .Execute(ActiveCell)
-    End With
-
-    ReDim arrC(1 To MC.Count)
-    For i = 1 To MC.Count
-        arrC(i) = MC(i - 1)
-        Cells(ActiveCell.Row, ActiveCell.Column + 2 * i).Formula = arrC(i)
-    Next i
-    Cells(ActiveCell.Row + 2, ActiveCell.Column).Clear
-    col1 = ActiveCell.Column + 1
-    col2 = Cells(ActiveCell.Row, ActiveCell.Column + 1).End(xlToRight).Column
-    Cells(ActiveCell.Row, ActiveCell.Column + 1).Resize(, col2 - col1 + 1).Select
-    For j = 1 To Selection.Count
-        Cells(ActiveCell.Row + 2, ActiveCell.Column - 1) = Cells(ActiveCell.Row + 2, ActiveCell.Column - 1) & Selection.Cells(j)
+    Set rngD = Selection
+    For m = 1 To rngD.Count
+        If Left(ActiveCell.Formula, 1) Like "[!=]" Then
+            rngD(m) = "=" & rngD(m)
+        End If
+        rngD(m).Formula = "'" & rngD(m).Formula
+    '    rngD(m).Formula = Mid(rngD(m).Formula, 2, Len(rngD(m).Formula))
     Next
-    Cells(ActiveCell.Row + 2, ActiveCell.Column - 1).Activate
-    ActiveCell = "=" & ActiveCell
-End Sub
+    col1 = rngD.Column + 1
+    col¬1 = rngD.Column - 1
+    
+    For n = 1 To rngD.Count
+        ad1 = Cells(rngD(n).Row, col1).Address(False, False)
+        ad¬1 = Cells(rngD(n).Row, col¬1).Address(False, False)
+        With RE
+            .Global = True
+            .Pattern = "\d+\.\d+|\W|\w+|\w+\d+"
+            Set MCs = .Execute(rngD(n))
+        End With
+        
+'=============================================================================
+'Loading data from MatchCollection
 
+        ReDim arrS(1 To MCs.Count)
+        For i = 1 To MCs.Count
+            arrS(i) = MCs(i - 1)
+            Cells(rngD(n).Row, rngD(n).Column + i).Formula = arrS(i)
+        Next
+        
+        On Error Resume Next
+        If Err = 0 Then
+            For i = 1 To MCs.Count
+                If Cells(rngD(n).Row, rngD(n).Column + i) Like "*[A-Z]#*" Then
+                    Cells(rngD(n).Row, rngD(n).Column + i) = "=" & Cells(rngD(n).Row, rngD(n).Column + i)
+                End If
+            Next i
+        End If
+        
+        For i = 2 To MCs.Count
+            If Cells(rngD(n).Row, rngD(n).Column + i) Like "*=*" Then
+                Cells(rngD(n).Row, rngD(n).Column + i) = Mid(Cells(rngD(n).Row, rngD(n).Column + i), 2)
+            End If
+        Next i
+        
+'==============================================================================
+'Joining cooked data
+
+        rngD(n).Clear
+        Range(ad¬1).Clear
+        col2 = Cells(rngD(n).Row, col1).End(xlToRight).Column
+        ad2 = Cells(rngD(n).Row, col2).Address(False, False)
+        ad¬1 = Cells(rngD(n).Row, col¬1).Address(False, False)
+        If col2 - rngD(n).Column > 1000 Then
+            Range(ad¬1) = Range(ad1)
+            rngD(n) = Range(ad1)
+            Range(ad1).Clear
+        Else
+            Set rngX = Range(ad1 & ":" & ad2)
+            For j = 2 To rngX.Count
+                rngD(n) = rngD(n) & rngX(j)
+                Range(ad¬1) = Range(ad¬1) & rngX(j)
+            Next
+        End If
+        rngX.Clear
+        rngD(n) = "=" & rngD(n)
+    Next
+End Sub
