@@ -1,57 +1,60 @@
 Sub TransFormula()
     Dim RE As New regExp
     Dim MCs As Object
-    Dim MCc As Object
-    Dim i%, j%
-    Dim arrS(), arrC, strin, char As String
+    Dim i%, j%, m%, n%
+    Dim arrS() As String
     Dim rngD, rngX As Range
     
     Set rngD = Selection
     For m = 1 To rngD.Count
-        If Left(rngD(m).Formula, 1) Like "=" Then
-            rngD(m) = Mid(rngD(m).Formula, 2, Len(rngD(m).Formula))
+        If Left(ActiveCell.Formula, 1) Like "[!=]" Then
+            rngD(m) = "=" & rngD(m)
         End If
+        rngD(m).Formula = "'" & rngD(m).Formula
     Next
     col1 = rngD.Column + 1
     col¬1 = rngD.Column - 1
+    col¬3 = 1 'rngD.Column - 3
     
     For n = 1 To rngD.Count
         ad1 = Cells(rngD(n).Row, col1).Address(False, False)
         ad¬1 = Cells(rngD(n).Row, col¬1).Address(False, False)
+        ad¬3 = Cells(rngD(n).Row, col¬3).Address(False, False)
+        noR = Mid(ad1, 2)
         With RE
             .Global = True
-            .Pattern = "[A-Z]\d+|\d+"
+            .Pattern = "\d+\.\d+|\W|\w+|\w+\d+"
             Set MCs = .Execute(rngD(n))
         End With
         
-        With RE
-            .Global = True
-            .Pattern = "[-\+\*/^()]+"
-            Set MCc = .Execute(rngD(n))
-        End With
-
 '========================================================================
 'Loading data from MatchCollection
 
-        On Error Resume Next
         ReDim arrS(1 To MCs.Count)
+        For i = 1 To MCs.Count
+            arrS(i) = MCs(i - 1)
+            Cells(rngD(n).Row, rngD(n).Column + i).Formula = arrS(i)
+        Next
+        
+        On Error Resume Next
         If Err = 0 Then
             For i = 1 To MCs.Count
-                arrS(i) = MCs(i - 1)
-                Cells(rngD(n).Row, rngD(n).Column + 2 * i).Formula = "=" & arrS(i)
+                If Cells(rngD(n).Row, rngD(n).Column + i) Like "*[A-Z]#*" Then
+                    Cells(rngD(n).Row, rngD(n).Column + i) = "=" & Cells(rngD(n).Row, rngD(n).Column + i)
+                End If
             Next i
-        Else
-            Cells(rngD(n).Row, col1) = rngD(n)
         End If
         
-        ReDim arrC(1 To MCc.Count)
-        For i = 1 To MCc.Count
-            arrC(i) = MCc(i - 1)
-            Cells(rngD(n).Row, rngD(n).Column + i + i - 1).Formula = arrC(i)
+        For i = 2 To MCs.Count
+            If Cells(rngD(n).Row, rngD(n).Column + i) Like "*=*" Then
+                Cells(rngD(n).Row, rngD(n).Column + i) = Mid(Cells(rngD(n).Row, rngD(n).Column + i), 2)
+            End If
         Next i
+        
 '========================================================================
 'Joining cooked data
-
+        
+        Range(ad¬3) = rngD(n)
         rngD(n).Clear
         Range(ad¬1).Clear
         col2 = Cells(rngD(n).Row, col1).End(xlToRight).Column
@@ -63,12 +66,44 @@ Sub TransFormula()
             Range(ad1).Clear
         Else
             Set rngX = Range(ad1 & ":" & ad2)
-            For j = 1 To rngX.Count
+            For j = 2 To rngX.Count
                 rngD(n) = rngD(n) & rngX(j)
                 Range(ad¬1) = Range(ad¬1) & rngX(j)
             Next
         End If
-        rngX.Clear
+'=======================================================================
+'Additional checking final formula
+ 
+        For j = 0 To 1
+            With RE
+                .Global = True
+                .Pattern = "[-+*/()^]"
+                Set MC = .Execute(Cells(noR, j * 3 + 1))
+            End With
+            
+            If j = 0 Then
+                ReDim arr1(1 To MC.Count)
+                For i = 1 To MC.Count
+                    arr1(i) = MC(i - 1)
+                Next i
+                strin1 = Join(arr1, "")
+            Else
+                ReDim arr2(1 To MC.Count)
+                For i = 1 To MC.Count
+                    arr2(i) = MC(i - 1)
+                Next i
+                strin2 = Join(arr2, "")
+            End If
+        Next
+        bool = strin1 = strin2
+        If bool Then
+            Range(ad¬3).Clear
+        Else
+            rngD(n) = Range(ad¬3)
+            Range(ad¬3).Clear
+        End If
         rngD(n) = "=" & rngD(n)
+        rngD(n) = rngD(n) & ""
+        rngX.Clear
     Next
 End Sub
