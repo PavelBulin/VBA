@@ -1,0 +1,35 @@
+Sub removeDuplicate()
+    Dim arr() As String
+    Dim i%
+    Dim rngD, rngX As Range
+    
+    Set rngD = Range("c19:c21")
+    For n = 1 To rngD.Count
+        rFst = Cells(rngD(n).Row, rngD(n).Column + 1).Address
+        rEnd = Range(rFst).End(xlToRight).Address
+        Set rngX = Range(rFst & ":" & rEnd)
+        
+        i = 1
+        ReDim arr(1)
+        Do While i <= rngX.Count
+            rEnd = Range(rFst).End(xlToRight).Address
+            Set rngX = Range(rFst & ":" & rEnd)
+            
+            j = 1
+            b = False
+            Do While j <= UBound(arr) And rngX(i) <> ""
+                If rngX(i) = arr(j) Then
+                    b = True
+                End If
+                    j = j + 1
+            Loop
+            If b Then
+                rngX(i).Delete Shift:=xlToLeft
+            Else
+                ReDim Preserve arr(i)
+                arr(i) = rngX(i)
+                i = i + 1
+            End If
+        Loop
+    Next
+End Sub

@@ -1,0 +1,30 @@
+Sub splittingText()
+    Dim RE As Object
+    Dim MCs As Object
+    Dim rngD As Range
+    Dim i%, j%, m%, n%
+    Dim arrS() As String
+    
+    Set RE = CreateObject("VBScript.RegExp")
+    Set rngD = Selection
+    
+'========================================================================
+' Setting matches of values in current range with the pattern
+    
+    For n = 1 To rngD.Count
+        With RE
+            .Global = True
+            .Pattern = "\w+"
+            Set MCs = .Execute(rngD(n))
+        End With
+    
+'========================================================================
+' Loading data on the sheet from MatchCollection
+
+        ReDim arrS(1 To MCs.Count)
+        For i = 1 To MCs.Count
+            arrS(i) = MCs(i - 1)
+            Cells(rngD(n).Row, rngD(n).Column + i) = arrS(i)
+        Next
+    Next
+End Sub

@@ -1,0 +1,26 @@
+Sub scoreOfWords()
+    Dim RE As Object
+    Dim MC As Object
+    Dim i%, j%
+    Dim rngD, rngX As Range
+    
+    Set RE = CreateObject("VBScript.RegExp")
+    Set rngD = Range("c19:c23") 'rngD(1) + (rngD.Count * 2 - 1) - 1
+    
+    For n = 1 To rngD.Count Step 2
+    
+        rFst = Cells(rngD(n).Row, rngD(n).Column + 1).Address
+        rEnd = Cells(rngD(n).Row, rngD(n).Column + 1).End(xlToRight).Address
+        Set rngX = Range(rFst & ":" & rEnd)
+
+        For j = 1 To rngX.Count
+            With RE
+                .Global = True
+                .Pattern = "\b" & rngX(j) & "\b"
+                Set MC = .Execute(rngD(n))
+            End With
+            
+            Cells(rngD(n).Row + 1, rngD(n).Column + j) = MC.Count
+        Next
+    Next
+End Sub

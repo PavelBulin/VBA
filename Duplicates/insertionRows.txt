@@ -1,0 +1,11 @@
+Sub insertionRows()
+    Dim rngX As Range
+    
+    Set rngX = Selection
+    Count = rngX.Count
+    Row = rngX(1).Row
+    For i = 1 To Count - 1
+        Rows(Row + 1 & ":" & Row + 1).Insert Shift:=xlDown
+        Row = Row + 2
+    Next
+End Sub
