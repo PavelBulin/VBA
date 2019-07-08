@@ -1,0 +1,96 @@
+Sub scoreUniqueWords()
+    Dim RE As Object
+    Dim MC As Object
+    Dim massiv() As String
+    Dim arr() As String
+    Dim rngD, rngX As Range
+    Dim i&, j&, k&, n&, u&
+
+    Application.ScreenUpdating = False
+    Set RE = CreateObject("VBScript.RegExp")
+    Set rngD = Selection
+
+    Open "C:\Users\Administrator\Documents\Excel\WorkZilla\file.txt" For Output As #1
+    For n = 1 To rngD.Count
+        Print #1, rngD(n)
+    Next
+    Close #1
+    
+    index = 1
+    ReDim massiv(0)
+    Open "C:\Users\Administrator\Documents\Excel\WorkZilla\file.txt" For Input As #1
+    Do While Not EOF(1)
+        Line Input #1, strOfText
+        arr() = Split(strOfText, " ")
+        nxt = 0
+        Do While nxt <= UBound(arr())
+            If arr(nxt) <> "" Then
+                b = True
+                stp = 0
+                Do While stp <= UBound(massiv())
+                    If massiv(stp) = arr(nxt) Then
+                        b = False
+                    End If
+                    stp = stp + 1
+                Loop
+                If b Then
+                    ReDim Preserve massiv(stp)
+                    massiv(stp) = arr(nxt)
+                 End If
+            End If
+            nxt = nxt + 1
+        Loop
+    Loop
+    
+    massiv = sortingArray(massiv)
+    
+    i = 1
+    Do While i <= UBound(massiv())
+        Cells(i) = massiv(i)
+        i = i + 1
+    Loop
+    Close #1
+        
+    Set rngD = Cells(1)
+    
+    ReDim massiv(0)
+    Open "C:\Users\Administrator\Documents\Excel\WorkZilla\file.txt" For Input As #1
+    j = 0
+    Do While Not EOF(1)
+        Line Input #1, strOfText
+        arr() = Split(strOfText, " ")
+        i = 0
+        Do While i <= UBound(arr)
+            If arr(i) <> "" Then
+                ReDim Preserve massiv(j)
+                massiv(j) = arr(i)
+                i = i + 1
+                j = j + 1
+            Else
+                i = i + 1
+            End If
+        Loop
+    Loop
+    
+    For n = 1 To rngD.Count Step 2
+    
+        rFst = Cells(rngD(n).Row, rngD(n).Column).Address
+        rEnd = Cells(rngD(n).Row, rngD(n).Column).End(xlToRight).Address
+        Set rngX = Range(rFst & ":" & rEnd)
+
+        For k = 1 To rngX.Count
+            u = 0
+            Do While u <= UBound(massiv)
+                With RE
+                    .Global = True
+                    .Pattern = "\b" & rngX(k) & "\b"
+                    Set MC = .Execute(massiv(u))
+                End With
+                u = u + 1
+                Cells(rngD(n).Row + 1, rngD(n).Column + k - 1) = Cells(rngD(n).Row + 1, rngD(n).Column + k - 1) + MC.Count
+            Loop
+        Next
+    Next
+    Close #1
+    Application.ScreenUpdating = True
+End Sub
