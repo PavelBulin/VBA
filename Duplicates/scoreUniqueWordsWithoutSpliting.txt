@@ -1,0 +1,107 @@
+Sub scoreUniqueWordsWithoutSpliting()
+    Dim RE As Object
+    Dim MC As Object
+    Dim massiv() As String
+    Dim arr() As String
+    Dim mas() As String
+    Dim rngD, rngX As Range
+    Dim i&, j&, k&, n&, u&
+
+    Application.ScreenUpdating = False
+    Set RE = CreateObject("VBScript.RegExp")
+    Set rngD = Selection
+
+    Open "C:\Users\Administrator\Documents\Excel\WorkZilla\file.txt" For Output As #1
+    For n = 1 To rngD.Count
+        Print #1, rngD(n)
+    Next
+    Close #1
+    
+    index = 0
+    ReDim arr(index)
+    ReDim massiv(0)
+    Open "C:\Users\Administrator\Documents\Excel\WorkZilla\file.txt" For Input As #1
+    Do While Not EOF(1)
+        Line Input #1, strOfText
+        ReDim Preserve arr(index)
+        arr(index) = strOfText
+        nxt = 0
+        Do While nxt <= UBound(arr())
+            b = True
+            stp = 0
+            Do While stp <= UBound(massiv())
+                If massiv(stp) = arr(nxt) Then
+                    b = False
+                End If
+                stp = stp + 1
+            Loop
+            If b Then
+                stp = stp + 1
+                ReDim Preserve massiv(stp - 1)
+                massiv(stp - 1) = arr(nxt)
+             End If
+            nxt = nxt + 1
+        Loop
+        index = index + 1
+    Loop
+    
+    massiv = sortingArray(massiv)
+    
+    Close #1
+        
+    Set rngD = Cells(1)
+    
+    index = 1
+    ReDim mas(0)
+    Open "C:\Users\Administrator\Documents\Excel\WorkZilla\file.txt" For Input As #1
+    Do While Not EOF(1)
+        Line Input #1, strOfText
+        arr() = Split(strOfText, " ")
+        nxt = 0
+        Do While nxt <= UBound(arr())
+            If arr(nxt) <> "" Then
+                b = True
+                stp = 0
+                Do While stp <= UBound(mas())
+                    If mas(stp) = arr(nxt) Then
+                        b = False
+                    End If
+                    stp = stp + 1
+                Loop
+                If b Then
+                    ReDim Preserve mas(stp)
+                    mas(stp) = arr(nxt)
+                 End If
+            End If
+            nxt = nxt + 1
+        Loop
+    Loop
+    
+    i = 1
+    Do While i <= UBound(mas())
+        Cells(i) = mas(i)
+        i = i + 1
+    Loop
+    
+    For n = 1 To rngD.Count Step 2
+    
+        rFst = Cells(rngD(n).Row, rngD(n).Column).Address
+        rEnd = Cells(rngD(n).Row, rngD(n).Column).End(xlToRight).Address
+        Set rngX = Range(rFst & ":" & rEnd)
+
+        For k = 1 To rngX.Count
+            u = 1
+            Do While u <= UBound(massiv)
+                With RE
+                    .Global = True
+                    .Pattern = "\b" & rngX(k) & "\b"
+                    Set MC = .Execute(massiv(u))
+                End With
+                u = u + 1
+                Cells(rngD(n).Row + 1, rngD(n).Column + k - 1) = Cells(rngD(n).Row + 1, rngD(n).Column + k - 1) + MC.Count
+            Loop
+        Next
+    Next
+    Close #1
+    Application.ScreenUpdating = True
+End Sub
