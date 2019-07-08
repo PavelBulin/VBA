@@ -1,0 +1,45 @@
+Sub finalTable()
+    Dim CON As Object
+    Dim RS As Object
+    Dim varArr() As Variant
+    Dim arr()
+    
+    Set CON = CreateObject("ADODB.Connection")
+    Set RS = CreateObject("ADODB.Recordset")
+        
+    CON.ConnectionString = "Provider=Microsoft.ACE.OLEDB.12.0;Data Source=" & ThisWorkbook.FullName & _
+                            "; Extended Properties=""Excel 12.0 Xml;HDR=YES"""
+    
+    CON.Open
+'====================================================================================================================
+' name articul count price
+
+    RS.Open "SELECT * FROM [Source1$]", CON
+    
+    Range("a2").CopyFromRecordset RS
+    ad2 = Range("a2").End(xlDown).Address
+    cntOfRws = Range("a2" & ":" & ad2).Count
+    RS.Close
+    RS.Open "SELECT * FROM [Source1$]", CON
+    varArr = RS.GetRows
+    Range("a1").CurrentRegion.Clear
+    
+    For i = 1 To RS.Fields.Count
+        If RS.Fields(i - 1).Name Like "*name*" Then
+            rwStart = 2
+            For j = 0 To cntOfRws - 1
+                If varArr(i - 1, j) Like "*pen*" Then
+                    param = varArr(i - 1, j)
+                    RS.Close
+                    RS.Open "SELECT * FROM [Source1$] WHERE name ='" & param & "'", CON
+                    Cells(rwStart, 1).CopyFromRecordset RS
+                    rwStart = rwStart + 1
+                End If
+            Next
+        End If
+    Next
+
+    For i = 1 To RS.Fields.Count
+        Cells(1, i) = RS.Fields(i - 1).Name
+    Next
+End Sub
