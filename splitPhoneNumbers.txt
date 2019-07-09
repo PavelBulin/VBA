@@ -1,0 +1,33 @@
+Sub splitPhoneNumbers()
+    Dim wshX As Worksheet
+    Dim rngD, rngX As Range
+    
+    Set wshX = ActiveSheet
+    qRows = wshX.UsedRange.Rows.Count
+    qColumns = wshX.UsedRange.Columns.Count
+    Cells.NumberFormat = "@"
+    adr2 = Cells(qRows, qColumns).Address
+    Set rngD = Range("a1:" & adr2)
+    For i = 1 To rngD.Cells.Count
+        If rngD(i) = "NOfPhone" Then
+            adr1 = rngD(i).Address(False, False)
+        End If
+    Next
+    adr2 = Range(adr1).End(xlDown).Address
+    Set rngX = Range(adr1 & ":" & adr2)
+        
+    index = 1
+    For i = 1 To rngX.Count
+        j = 1
+        rngX(i) = Trim(rngX(i))
+        Do While rngX(i) Like "* *"
+            index1 = InStr(index, Trim(rngX(i)), " ")
+            index2 = InStr(index1 + 1, Trim(rngX(i)), " ")
+            lenSubStr = Abs(index2 - index1) - 1
+            rngX(i).Offset(, j) = Mid(rngX(i), index1 + 1, lenSubStr)
+            rngX(i) = Replace(rngX(i), Mid(rngX(i), index1 + 1, lenSubStr + 1), "")
+            rngX(i) = Trim(rngX(i))
+            j = j + 1
+        Loop
+    Next
+End Sub
