@@ -1,0 +1,52 @@
+Sub gettingTwoTables()
+    Dim CON As Object
+    Dim RS1, RS2 As Object
+    Dim varArr()
+    Dim pathX As String
+    Dim wshX As Worksheet
+'_____________________________________________________________________________________________________________________
+'|                                                                                                                    |
+    Set wshX = ActiveSheet                                                                                           '|
+'|                                                                                                                    |
+    Set CON = CreateObject("ADODB.Connection")                                                                       '|
+'|                                                                                                                    |
+    Set RS1 = CreateObject("ADODB.Recordset")                                                                        '|
+'|                                                                                                                    |
+    Set RS2 = CreateObject("ADODB.Recordset")                                                                        '|
+'|                                                                                                                    |
+    CON.Provider = "Microsoft.ACE.OLEDB.12.0"                                                                        '|
+'|                                                                                                                    |
+    pathX = ThisWorkbook.FullName                                                                                    '|
+'|                                                                                                                    |
+    CON.ConnectionString = "Data Source=" & pathX & "; Extended Properties=""Excel 12.0 Xml;HDR=YES"""               '|
+'|                                                                                                                    |
+    CON.Open                                                                                                         '|
+'|====================================================================================================================|
+'|  name    articule    count   price                                                                                '|
+'|                                                                                                                    |
+    RS1.Open "SELECT * FROM [Source1$]", CON                                                                         '|
+'|                                                                                                                    |
+    RS2.Open "SELECT * FROM [Source2$]", CON                                                                         '|
+'|                                                                                                                    |
+'                                                                                                                    '|
+'|                                                                                                                    |
+    Range("a1").CurrentRegion.Clear                                                                                  '|
+'|                                                                                                                    |
+    Range("a2").CopyFromRecordset RS1                                                                                '|
+'|                                                                                                                    |
+    For i = 1 To RS1.Fields.Count                                                                                    '|
+'|                                                                                                                    |
+        Cells(1, i) = RS1.Fields(i - 1).Name                                                                         '|
+'|                                                                                                                    |
+    Next                                                                                                             '|
+'|                                                                                                                    |
+    Cells(2, 1).Offset(, RS1.Fields.Count + 1).CopyFromRecordset RS2                                                 '|
+'|                                                                                                                    |
+    For i = 1 To RS2.Fields.Count                                                                                    '|
+'|                                                                                                                    |
+        Cells(1, i + RS1.Fields.Count + 1) = RS2.Fields(i - 1).Name                                                  '|
+'|                                                                                                                    |
+    Next                                                                                                             '|
+'|____________________________________________________________________________________________________________________|
+
+End Sub
