@@ -1,0 +1,68 @@
+Sub joinTwoTables()
+    Dim CON As Object
+    Dim RS1, RS2 As Object
+    Dim varArr()
+    Dim pathX As String
+    Dim rwsCount, clmsCount, result%
+'_____________________________________________________________________________________________________________________
+'|                                                                                                                    |
+    Set CON = CreateObject("ADODB.Connection")                                                                       '|
+'|                                                                                                                    |
+    Set RS1 = CreateObject("ADODB.Recordset")                                                                        '|
+'|                                                                                                                    |
+    Set RS2 = CreateObject("ADODB.Recordset")                                                                        '|
+'|                                                                                                                    |
+    CON.Provider = "Microsoft.ACE.OLEDB.12.0"                                                                        '|
+'|                                                                                                                    |
+    pathX = ThisWorkbook.FullName                                                                                    '|
+'|                                                                                                                    |
+    CON.ConnectionString = "Data Source=" & pathX & "; Extended Properties=""Excel 12.0 Xml;HDR=YES"""               '|
+'|                                                                                                                    |
+    CON.Open                                                                                                         '|
+'|====================================================================================================================|
+'|  name    articule    count   price                                                                                '|
+'|                                                                                                                    |
+    RS1.Open "SELECT db.name, srcI.count as source1 FROM db LEFT JOIN srcI ON db.articule = srcI.articule", CON      '|
+'|                                                                                                                    |
+    RS2.Open "SELECT  srcII.count as source2, db.price FROM db LEFT JOIN srcII ON db.articule = srcII.articule", CON '|
+'|                                                                                                                    |
+    Range("a1").CurrentRegion.Clear                                                                                  '|
+'|                                                                                                                    |
+    Range("a2").CopyFromRecordset RS1                                                                                '|
+'|                                                                                                                    |
+    For i = 1 To RS1.Fields.Count                                                                                    '|
+'|                                                                                                                    |
+        Cells(1, i) = RS1.Fields(i - 1).Name                                                                         '|
+'|                                                                                                                    |
+    Next                                                                                                             '|
+'|                                                                                                                    |
+    Cells(2, 1).Offset(, RS1.Fields.Count).CopyFromRecordset RS2                                                     '|
+'|                                                                                                                    |
+    For i = 1 To RS2.Fields.Count                                                                                    '|
+'|                                                                                                                    |
+        Cells(1, i + RS1.Fields.Count) = RS2.Fields(i - 1).Name                                                      '|
+'|                                                                                                                    |
+    Next                                                                                                             '|
+'|                                                                                                                    |
+    rwsCount = Mid(Range("a1").End(xlDown).Address, 4, 10)                                                           '|
+'|                                                                                                                    |
+    clmsCount = RS1.Fields.Count + RS1.Fields.Count                                                                  '|
+'|                                                                                                                    |
+    result = 0                                                                                                       '|
+'|                                                                                                                    |
+    For i = 2 To rwsCount                                                                                            '|
+'|                                                                                                                    |
+        Cells(i, 1).Offset(, clmsCount).FormulaR1C1 = "=(rc[-3]+rc[-2])*rc[-1]"                                      '|
+'|                                                                                                                    |
+        result = result + Cells(i, 1).Offset(, clmsCount)                                                            '|
+'|                                                                                                                    |
+    Next                                                                                                             '|
+'|                                                                                                                    |
+    Cells(1, 1).Offset(, clmsCount) = "Result"                                                                       '|
+'|                                                                                                                    |
+    Cells(1, 1).Offset(rwsCount, clmsCount) = result                                                                 '|
+'|                                                                                                                    |
+    Cells(1, 1).Offset(rwsCount, clmsCount).Font.Bold = True                                                         '|
+'|____________________________________________________________________________________________________________________|
+
+End Sub
